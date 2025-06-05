@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('import_data', function (Blueprint $table) {
             $table->id();
-            $table->integer('index');
+            $table->string('index');
             $table->string('customer_id');
             $table->string('first_name');
             $table->string('last_name');
@@ -25,6 +25,9 @@ return new class extends Migration {
             $table->date('subscription_date');
             $table->string('website');
             $table->timestamps();
+
+            $table->index('customer_id');
+            $table->index('email');
         });
     }
 
