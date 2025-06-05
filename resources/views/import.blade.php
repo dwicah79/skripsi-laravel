@@ -102,12 +102,17 @@
         <button data-file="1_5m.csv">Import 1,500,000 rows</button>
     </div>
 
+    <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+        <button id="truncate-btn" style="background-color: #e74c3c;">Clear Data</button>
+    </div>
+
     <div id="progress-container">
         <div id="progress-bar">0%</div>
     </div>
 
     <div id="status">Pilih file untuk memulai proses import...</div>
     <div id="error"></div>
+
 
     <script>
         document.querySelectorAll('button[data-file]').forEach(button => {
@@ -173,6 +178,30 @@
                 }
             }, 1000);
         }
+
+        document.getElementById('truncate-btn').addEventListener('click', async () => {
+            if (!confirm('Apakah kamu yakin ingin menghapus semua data? Ini tidak bisa dibatalkan!')) return;
+
+            const response = await fetch('{{ route('import.truncate') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                }
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                alert('Semua data berhasil dihapus!');
+                document.getElementById('status').innerText = 'Data telah dihapus.';
+                document.getElementById('progress-bar').style.width = '0%';
+                document.getElementById('progress-bar').innerText = '0%';
+            } else if (data.error) {
+                document.getElementById('error').innerText = data.error;
+                document.getElementById('error').style.display = 'block';
+            }
+        });
     </script>
 </body>
 

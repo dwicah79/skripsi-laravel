@@ -14,6 +14,7 @@ Route::get('/', function () {
 Route::get('/import', [ImportController::class, 'index']);
 Route::post('/import/start', [ImportController::class, 'startImport'])->name('import.start');
 Route::get('/import/status/{id}', [ImportController::class, 'status']);
+Route::post('/import/truncate', [ImportController::class, 'truncate'])->name('import.truncate');
 
 
 Route::get('/test-csv', function () {

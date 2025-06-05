@@ -2,9 +2,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ImportLog;
-use App\Jobs\ImportCsvChunk;
 use App\Models\ImportData;
+use App\Jobs\ImportCsvChunk;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class ImportController extends Controller
@@ -105,4 +106,45 @@ class ImportController extends Controller
 
         return response()->json($response);
     }
+
+    public function truncate()
+    {
+        try {
+            DB::table('import_data')->truncate();
+            DB::table('import_logs')->truncate();
+            return response()->json(['success' => true]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Gagal menghapus data: ' . $e->getMessage()], 500);
+        }
+    }
+
+    // public function importNoQueue(Request $request)
+    // {
+    //     $fileName = $request->input('file');
+    //     $filePath = storage_path('app/public/' . $fileName);
+
+    //     if (!file_exists($filePath)) {
+    //         return response()->json(['error' => 'File tidak ditemukan.']);
+    //     }
+
+    //     try {
+    //         // Proses import langsung, tanpa queue
+    //         $handle = fopen($filePath, 'r');
+    //         $header = fgetcsv($handle);
+
+    //         while (($row = fgetcsv($handle)) !== false) {
+    //             $data = array_combine($header, $row);
+    //             DB::table('import_data')->insert($data);
+    //         }
+
+    //         fclose($handle);
+    //         return response()->json(['success' => true]);
+
+    //     } catch (\Exception $e) {
+    //         return response()->json(['error' => $e->getMessage()]);
+    //     }
+    // }
+
+
+
 }
