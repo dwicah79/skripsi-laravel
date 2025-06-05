@@ -6,5 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class ImportData extends Model
 {
-    //
+    protected $table = 'import_data';
+    protected $guarded = [
+        'id'
+    ];
 }
