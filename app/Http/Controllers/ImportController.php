@@ -117,34 +117,4 @@ class ImportController extends Controller
             return response()->json(['error' => 'Gagal menghapus data: ' . $e->getMessage()], 500);
         }
     }
-
-    // public function importNoQueue(Request $request)
-    // {
-    //     $fileName = $request->input('file');
-    //     $filePath = storage_path('app/public/' . $fileName);
-
-    //     if (!file_exists($filePath)) {
-    //         return response()->json(['error' => 'File tidak ditemukan.']);
-    //     }
-
-    //     try {
-    //         // Proses import langsung, tanpa queue
-    //         $handle = fopen($filePath, 'r');
-    //         $header = fgetcsv($handle);
-
-    //         while (($row = fgetcsv($handle)) !== false) {
-    //             $data = array_combine($header, $row);
-    //             DB::table('import_data')->insert($data);
-    //         }
-
-    //         fclose($handle);
-    //         return response()->json(['success' => true]);
-
-    //     } catch (\Exception $e) {
-    //         return response()->json(['error' => $e->getMessage()]);
-    //     }
-    // }
-
-
-
 }
