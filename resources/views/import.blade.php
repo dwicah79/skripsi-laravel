@@ -99,7 +99,7 @@
     <div class="button-container">
         <button data-file="customers-500000.csv">Import 500,000 rows</button>
         <button data-file="customers-1000000.csv">Import 1,000,000 rows</button>
-        <button data-file="1_5m.csv">Import 1,500,000 rows</button>
+        <button data-file="customers-1500000.csv">Import 1,500,000 rows</button>
     </div>
 
     <div style="display: flex; justify-content: center; margin-bottom: 20px;">
@@ -167,7 +167,6 @@
     <div class="status-item"><span class="status-label">Diproses:</span> ${data.processed || '-'} / ${data.total || '-'}</div>
     <div class="status-item"><span class="status-label">Waktu Eksekusi:</span> ${data.stats?.total_time || '-'}</div>
     <div class="status-item"><span class="status-label">Rata-rata per 100 baris:</span> ${data.stats?.average_time_per_100_rows || '-'}</div>
-    <div class="status-item"><span class="status-label">Memori Saat Ini:</span> ${data.stats?.memory_usage || '-'}</div>
     <div class="status-item"><span class="status-label">Puncak Memori:</span> ${data.stats?.peak_memory || '-'}</div>
 `;
 

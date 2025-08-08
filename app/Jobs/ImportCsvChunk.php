@@ -27,6 +27,7 @@ class ImportCsvChunk implements ShouldQueue
         $startTime = microtime(true);
         $memoryStats = [];
         $executionTimes = [];
+        ini_set('memory_limit', '2048M');
 
         try {
             $log = ImportLog::findOrFail($this->log->id);

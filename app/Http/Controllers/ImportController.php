@@ -20,6 +20,7 @@ class ImportController extends Controller
         $request->validate([
             'file' => 'required|string'
         ]);
+        ini_set('memory_limit', '2048M');
 
         $filename = basename($request->input('file')); // pakai basename supaya aman
         $filePath = storage_path('app/imports/' . $filename);
