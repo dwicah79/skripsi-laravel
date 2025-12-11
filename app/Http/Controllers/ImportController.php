@@ -19,12 +19,14 @@ class ImportController extends Controller
     public function startImport(Request $request)
     {
         $request->validate([
-            'file' => 'required|string'
+            'file' => 'required|string',
+            'chunk_size' => 'nullable|integer|min:100|max:10000'
         ]);
         ini_set('memory_limit', '2048M');
 
         $filename = basename($request->input('file')); // pakai basename supaya aman
         $filePath = storage_path('app/imports/' . $filename);
+        $chunkSize = $request->input('chunk_size', 1000); // default 1000 jika tidak diisi
 
         // Validasi file ada di storage
         if (!Storage::exists('imports/' . $filename)) {
@@ -47,6 +49,7 @@ class ImportController extends Controller
                 'file_name' => $filename,
                 'total_rows' => $rows,
                 'inserted_rows' => 0,
+                'chunk_size' => $chunkSize,
                 'status' => 'queued'
             ]);
 

@@ -16,10 +16,12 @@ class ImportCsvChunk implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $log;
+    protected $chunkSize;
 
     public function __construct(ImportLog $log)
     {
         $this->log = $log;
+        $this->chunkSize = $log->chunk_size ?? 1000; // VARIASI CHUNK SIZE
     }
 
     public function handle(): void
@@ -43,9 +45,6 @@ class ImportCsvChunk implements ShouldQueue
             if (!file_exists($path)) {
                 throw new \Exception("File tidak ditemukan di: " . $path);
             }
-            if (is_dir($path)) {
-                throw new \Exception("Path mengarah ke direktori bukan file");
-            }
 
             $handle = fopen($path, 'r');
             if (!$handle) {
@@ -57,7 +56,7 @@ class ImportCsvChunk implements ShouldQueue
             $log->save();
 
             $batch = [];
-            $batchSize = 1000;
+            $batchSize = $this->chunkSize; // <-- chunk dinamis
             $processed = 0;
 
             while (($data = fgetcsv($handle)) !== false) {
@@ -113,17 +112,16 @@ class ImportCsvChunk implements ShouldQueue
             $avgPer100 = $processed > 0 ? round($totalTime / ($processed / 100), 4) : 0;
 
             $log->execution_stats = json_encode([
+                'chunk_size' => $batchSize, // ditambahkan
                 'total_execution_time' => round($totalTime, 2) . ' seconds',
                 'average_per_100' => $avgPer100 . ' seconds',
-                'execution_times' => array_map(function ($et) {
-                    return ['time' => round($et['time'], 4)];
-                }, $executionTimes),
-                'memory_usage' => array_map(function ($m) {
-                    return [
-                        'memory_peak' => round($m['memory_peak'] / 1048576, 2) . ' MB',
-                        'memory_now' => round($m['memory_now'] / 1048576, 2) . ' MB'
-                    ];
-                }, $memoryStats),
+                'execution_times' => array_map(fn($et) => [
+                    'time' => round($et['time'], 4)
+                ], $executionTimes),
+                'memory_usage' => array_map(fn($m) => [
+                    'memory_peak' => round($m['memory_peak'] / 1048576, 2) . ' MB',
+                    'memory_now' => round($m['memory_now'] / 1048576, 2) . ' MB'
+                ], $memoryStats),
             ]);
 
             $log->save();
