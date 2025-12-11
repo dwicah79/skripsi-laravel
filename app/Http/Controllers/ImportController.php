@@ -12,7 +12,8 @@ class ImportController extends Controller
 {
     public function index()
     {
-        return view('import');
+        $importHistory = ImportLog::orderBy('created_at', 'desc')->get();
+        return view('import', compact('importHistory'));
     }
 
     public function startImport(Request $request)
@@ -98,7 +99,7 @@ class ImportController extends Controller
                     ? round(max($memoryPeaks), 2) . ' MB'
                     : '-',
                 'average_time_per_100_rows' => (!empty($stats['execution_times']) && is_array($stats['execution_times']))
-                    ? round(array_sum(array_column($stats['execution_times'], 'time')) / count($stats['execution_times']), 2) . ' s'
+                    ? round(array_sum(array_column($stats['execution_times'], 'time')) / count($stats['execution_times']), 4) . ' s'
                     : '-',
                 'memory_usage' => '-',
             ];
