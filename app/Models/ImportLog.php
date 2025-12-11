@@ -8,7 +8,13 @@ class ImportLog extends Model
 {
     protected $table = 'import_logs';
 
-    protected $guarded = [
-        'id'
+    protected $fillable = [
+        'file_name',
+        'total_rows',
+        'inserted_rows',
+        'chunk_size',
+        'status',
+        'execution_stats',
+        'duration'
     ];
 }
