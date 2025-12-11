@@ -188,7 +188,40 @@
 <body>
     <h1>Import CSV ke Database Laravel</h1>
 
-    <!-- History Section -->
+
+    <!-- New Import Section -->
+    <div class="new-import-section">
+        <h2>➕ Import Data Baru</h2>
+
+        <div style="margin-bottom: 20px; text-align: center;">
+            <label for="chunk-size" style="font-weight: bold; margin-right: 10px; color: #2c3e50;">
+                Chunk Size (Baris per Batch):
+            </label>
+            <input type="number" id="chunk-size" value="1000" min="100" max="10000" step="100"
+                style="padding: 8px 12px; border: 2px solid #3498db; border-radius: 4px; font-size: 16px; width: 150px; text-align: center;">
+            <small style="display: block; margin-top: 5px; color: #6c757d;">
+                (Nilai antara 100 - 10,000)
+            </small>
+        </div>
+
+        <div class="button-container">
+            <button data-file="customers-500000.csv">Import 500,000 rows</button>
+            <button data-file="customers-1000000.csv">Import 1,000,000 rows</button>
+            <button data-file="customers-1500000.csv">Import 1,500,000 rows</button>
+        </div>
+
+        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+            <button id="truncate-btn" style="background-color: #e74c3c;">Clear Data</button>
+        </div>
+
+        <div id="progress-container">
+            <div id="progress-bar">0%</div>
+        </div>
+
+        <div id="status">Pilih file untuk memulai proses import...</div>
+        <div id="error"></div>
+    </div>
+
     <div class="history-container">
         <h2>📊 Riwayat Import</h2>
         @if ($importHistory->count() > 0)
@@ -213,6 +246,10 @@
                             {{ $history->created_at->format('d M Y, H:i:s') }}
                         </div>
                         <div class="detail-item">
+                            <span class="detail-label">Chunk Size:</span>
+                            {{ number_format($history->chunk_size ?? 1000) }} baris
+                        </div>
+                        <div class="detail-item">
                             <span class="detail-label">Total Baris:</span>
                             {{ number_format($history->total_rows) }}
                         </div>
@@ -223,9 +260,10 @@
                         @if ($history->execution_stats)
                             @php
                                 $stats = json_decode($history->execution_stats, true);
+                                $chunkSize = $history->chunk_size ?? 1000;
                             @endphp
                             <div class="detail-item">
-                                <span class="detail-label">Rata-rata per 1000 baris:</span>
+                                <span class="detail-label">Rata-rata per {{ number_format($chunkSize) }} baris:</span>
                                 @php
                                     if (!empty($stats['execution_times']) && is_array($stats['execution_times'])) {
                                         $avgTime =
@@ -267,33 +305,19 @@
         @endif
     </div>
 
-    <!-- New Import Section -->
-    <div class="new-import-section">
-        <h2>➕ Import Data Baru</h2>
-
-        <div class="button-container">
-            <button data-file="customers-500000.csv">Import 500,000 rows</button>
-            <button data-file="customers-1000000.csv">Import 1,000,000 rows</button>
-            <button data-file="customers-1500000.csv">Import 1,500,000 rows</button>
-        </div>
-
-        <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-            <button id="truncate-btn" style="background-color: #e74c3c;">Clear Data</button>
-        </div>
-
-        <div id="progress-container">
-            <div id="progress-bar">0%</div>
-        </div>
-
-        <div id="status">Pilih file untuk memulai proses import...</div>
-        <div id="error"></div>
-    </div>
-
 
     <script>
         document.querySelectorAll('button[data-file]').forEach(button => {
             button.addEventListener('click', async () => {
                 const file = button.getAttribute('data-file');
+                const chunkSize = parseInt(document.getElementById('chunk-size').value);
+
+                // Validasi chunk size
+                if (isNaN(chunkSize) || chunkSize < 100 || chunkSize > 10000) {
+                    document.getElementById('error').innerText = 'Chunk size harus antara 100 - 10,000';
+                    document.getElementById('error').style.display = 'block';
+                    return;
+                }
 
                 const response = await fetch('{{ route('import.start') }}', {
                     method: 'POST',
@@ -302,7 +326,8 @@
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                     },
                     body: JSON.stringify({
-                        file
+                        file,
+                        chunk_size: chunkSize
                     })
                 });
 
@@ -322,6 +347,7 @@
         function pollStatus(importId) {
             const statusEl = document.getElementById('status');
             const bar = document.getElementById('progress-bar');
+            const chunkSize = parseInt(document.getElementById('chunk-size').value);
 
             const interval = setInterval(async () => {
                 const res = await fetch(`/import/status/${importId}`);
@@ -340,9 +366,10 @@
 
                 statusEl.innerHTML = `
     <div class="status-item"><span class="status-label">Status:</span> ${data.status || '-'}</div>
+    <div class="status-item"><span class="status-label">Chunk Size:</span> ${chunkSize.toLocaleString()} baris</div>
     <div class="status-item"><span class="status-label">Diproses:</span> ${data.processed || '-'} / ${data.total || '-'}</div>
     <div class="status-item"><span class="status-label">Waktu Eksekusi:</span> ${data.stats?.total_time || '-'}</div>
-    <div class="status-item"><span class="status-label">Rata-rata per 1000 baris:</span> ${data.stats?.average_time_per_100_rows || '-'}</div>
+    <div class="status-item"><span class="status-label">Rata-rata per ${chunkSize.toLocaleString()} baris:</span> ${data.stats?.average_time_per_100_rows || '-'}</div>
     <div class="status-item"><span class="status-label">Puncak Memori:</span> ${data.stats?.peak_memory || '-'}</div>
 `;
 
